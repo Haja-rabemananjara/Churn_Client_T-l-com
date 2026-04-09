@@ -81,3 +81,84 @@ def encode_target(df: pd.DataFrame, col: str = "Churn") -> pd.DataFrame:
 
     return df
 
+# 4. encodage des colonnes binaires
+
+# Colonnes avec uniquement Yes/No
+BINARY_YES_NO = [
+    "Partner", "Dependents", "PhoneService", "PaperlessBilling",
+]
+
+# Colonnes avec Yes / No / "No phone service" / "No internet service"
+BINARY_SERVICES = [
+    "MultipleLines", "OnlineSecurity", "OnlineBackup", "DeviceProtection",
+    "TechSupport", "StreamingTV", "StreamingMovies",
+]
+
+BINARY_MAP = {
+    'Yes': 1,
+    'No': 0,
+    'No internet service': 0,
+    'No phone service':0,
+}
+
+"""
+Encode toutes les colonnes binaires Yes/No en 0/1.
+
+- BINARY_YES_NO : colonnes à 2 modalités strictes
+- BINARY_SERVICE : colonnes pouvant contenir 'No phone/internet service'
+- gender : Male→1, Female→0
+
+Args:
+    df : DataFrame après fix_TotalCharges et encode_target
+
+Returns:
+    DataFrame avec colonnes binaires en int
+"""
+
+def encode_bin_columns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    
+    for col in BINARY_YES_NO:
+        df[col] = (df[col] == 'Yes').astype(int)
+
+    for col in BINARY_SERVICES:
+        df[col] = df[col].map(BINARY_MAP)
+
+    df('gender') = (df['gender'] == 'Male').astype(int)
+
+    return df
+
+# 5. One-Hot Encoding des colonnes nominales
+"""
+Applique le One-Hot Encoding aux colonnes nominales (plusieurs modalités).
+
+drop_first = False par défaut :
+    - Meilleure interprétabilité (on voit toutes les modalités)
+    - Nécessaire pour Random Forest (les arbres gèrent la muticolinéarité)
+    - A passer à True si on utilise uniquement la Régression Logistique
+
+Args:
+    df          : DataFrame après encode_binary_cols
+    cols        : liste des colonnes à encoder (défaut: NOMINAL_COLS)
+    drop_first  : si True, supprime la première modalité (évite multicolinéarité)
+
+Returns:
+    DataFrame avec colonnes dummies en int
+"""
+
+
+NOMINAL_COLS = ["InternetService", "Contract", "PaymentMethod"]
+
+def encode_nominal_cols(
+        df: pd.DataFrame,
+        cols: list = None,
+        drop_first: bool = False,
+    ) -> pd.DataFrame:
+
+    if cols is None:
+        cols = NOMINAL_COLS
+
+    df = df.copy()
+    df = pd.get_dummies(df, columns=cols, drop_first=drop_first, dtype=int)
+    return df
+
