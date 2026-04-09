@@ -19,9 +19,10 @@ def loadData(path = DATA_PATH):
     df_raw = pd.read_csv(path)
 
     # Premier aperçut de la forme et vérification des colonnes
-    print(f'Shape : {df_raw.shape}')
+    print(f'Shape : {df_raw.shape} ({df_raw.shape[0]:,} lignes x {df_raw.shape[1]} colonnes)')
     print(f'\nColonne ({len(df_raw.columns)}) :')
-    print(df_raw.columns.to_list())
+    for i, col in enumerate(df_raw.columns, 1):
+        print(f"  {i:2d}. {col} ({df_raw[col].dtype})")
 
     return df_raw
 
