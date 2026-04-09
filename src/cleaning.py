@@ -63,3 +63,21 @@ def fix_TotalCharges(df: pd.DataFrame) -> pd.DataFrame:
     df['TotalCharges'] = df['TotalCharges'].fillna(mediane)
 
     return df
+
+# 3. Encodage de la variable cible
+"""
+Encoder la variable cible binaire Yes/No en 1/0
+
+Args:
+    df: DataFrame source
+    col: nom de la colonne cible (défaut : 'Churn')
+
+Returns:
+    DataFrame avec la colonne cible en int (1 churner, 0 = fidèle)
+"""
+def encode_target(df: pd.DataFrame, col: str = "Churn") -> pd.DataFrame:
+    df = df.copy()
+    df[col] = (df[col] == 'Yes').astype(int)
+
+    return df
+
