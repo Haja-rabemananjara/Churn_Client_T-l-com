@@ -1,4 +1,17 @@
+"""
+cleaning.py
+
+Il s'agit des fonctions de nettoyage et de prépration des données.
+
+Principe : chaque fonction est pure (prend un DataFrame, retourne un DataFrame)
+et ne modifie jamais les données brutes en place.
+
+Usage dans les notebooks:
+    from src.cleaning import {nom des fonctions}
+"""
+
 import pandas as pd
+import numpy as np
 
 DATA_PATH = '../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv'
 
@@ -12,5 +25,3 @@ def loadData(path = DATA_PATH):
 
     return df_raw
 
-if __name__ == "__main__":
-    df_raw = loadData()
