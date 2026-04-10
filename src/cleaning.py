@@ -15,7 +15,7 @@ import numpy as np
 
 DATA_PATH = '../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv'
 
-# 1. Chargement de la data
+# Prélude. Chargement de la data
 def loadData(path = DATA_PATH):
     df_raw = pd.read_csv(path)
 
@@ -27,7 +27,7 @@ def loadData(path = DATA_PATH):
 
     return df_raw
 
-# 2. Correction de TotalCharges
+# 1. Correction de TotalCharges
 """
 On va corriger la colonne TotalCharges stockée en string dans le dataset brut.
 
@@ -64,7 +64,7 @@ def fix_TotalCharges(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# 3. Encodage de la variable cible
+# 2. Encodage de la variable cible
 """
 Encoder la variable cible binaire Yes/No en 1/0
 
@@ -81,7 +81,7 @@ def encode_target(df: pd.DataFrame, col: str = "Churn") -> pd.DataFrame:
 
     return df
 
-# 4. encodage des colonnes binaires
+# 3. encodage des colonnes binaires
 
 # Colonnes avec uniquement Yes/No
 BINARY_YES_NO = [
@@ -128,7 +128,7 @@ def encode_bin_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# 5. One-Hot Encoding des colonnes nominales
+# 4. One-Hot Encoding des colonnes nominales
 """
 Applique le One-Hot Encoding aux colonnes nominales (plusieurs modalités).
 
@@ -146,7 +146,6 @@ Returns:
     DataFrame avec colonnes dummies en int
 """
 
-
 NOMINAL_COLS = ["InternetService", "Contract", "PaymentMethod"]
 
 def encode_nominal_cols(
@@ -161,4 +160,39 @@ def encode_nominal_cols(
     df = df.copy()
     df = pd.get_dummies(df, columns=cols, drop_first=drop_first, dtype=int)
     return df
+
+# 5. Pipeline complet
+"""
+Exécute le pipeline de nettoyage complet dans le bon ordre.
+
+Ordre des étapes:
+    1. fix_totalCharge          -> correction type + imputation
+    2. encode_target            -> Churn Yes/No en 1/0
+    3. encode_bin_columns       -> conversion de toutes les colonnes binaires
+    4. encode_nominal_cols      -> OHE sur les colonnes nominales
+    5. drop customerID          -> identifiant non informatif pour le ML
+
+Args:
+    df_raw  : DataFrame brut chargé depuis data/raw/
+    drop_id : si True (défaut), supprime la colonne customerID
+
+Returns:
+    DataFrame nettoyé, prêt pour EDA et ML
+"""
+
+def run_cleaning_pipeline(
+        df_raw: pd.DataFrame,
+        drop_id: bool = True,
+) -> pd.DataFrame:
+    
+    df = fix_TotalCharges(df_raw)
+    df = encode_target(df)
+    df = encode_bin_columns(df)
+    df = encode_nominal_cols(df)
+
+    if drop_id and "customerID" in df.columns:
+        df = df.drop("customerID", axis=1)
+    
+    return df
+
 
