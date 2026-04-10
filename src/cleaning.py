@@ -195,4 +195,33 @@ def run_cleaning_pipeline(
     
     return df
 
+# 6. Validation post-cleaning
+"""
+Vérifier que le DataFrame nettoyé soit prêt pour le ML.
 
+Contrôles effectués:
+    - Aucune valeur manquante
+    - Aucune colonne de type object restante
+    - Colonne 'Churn' présente avec uniquement 0 et 1
+
+Args:
+    df: DataFrame après run_cleaning_pipeline
+
+Returns:
+    True si toutes les vérifications passent, lève une AssertionError sinon
+"""
+
+def validate_clean_df(df:pd.DataFrame) -> bool:
+
+    nan_count = df.isnull().sum().sum()
+    assert nan_count == 0, f"{nan_count} valeurs manquantes détectées."
+
+    object_cols = df.select_dtypes(include='object').columns.to_list()
+    assert len(object_cols) == 0, f"Colonnes objet restantes : {object_cols}"
+
+    assert 'Churn' in df.columns, f"Colonne 'Churn' manquante"
+    assert set(df['Churn'].unique()).issubset({0, 1}), f"Churn contient des valeurs != 0/1"
+
+    print(f"Validation OK - Shape : {df.shape} | Churn rate : {df['Churn'].mean()*100:.1f}%")
+
+    return True
