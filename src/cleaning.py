@@ -124,7 +124,7 @@ def encode_bin_columns(df: pd.DataFrame) -> pd.DataFrame:
     for col in BINARY_SERVICES:
         df[col] = df[col].map(BINARY_MAP)
 
-    df('gender') = (df['gender'] == 'Male').astype(int)
+    df['gender'] = (df['gender'] == 'Male').astype(int)
 
     return df
 
