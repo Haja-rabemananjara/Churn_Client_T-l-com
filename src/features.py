@@ -42,3 +42,28 @@ def add_tenure_group(df: pd.DataFrame, col: str='tenure') -> pd.DataFrame:
     )
     return df
 
+"""
+Créer le ratio charges totales / charges mensuelles.
+
+Interpréation métier:
+    - Valeur attendue = tenure (nombre de mois)
+    - Un ratio anormalement bas peut indiquer des remises ou erreurs de facturation
+    - Utile pour détercter des patterns de départ prématuré
+
+Args:
+    df: DataFrame contenant 'TotalCharges' et 'MonthlyCharges' en float
+
+Returns:
+    DataFrame avec une colonne 'charge_ratio' ajoutée
+"""
+
+def add_charge_ratio(df: pd.DataFrame) -> pd.DataFrame:
+
+    df = df.copy()
+    df['charge_ratio'] = np.where(
+        df['MonthlyCharges'] > 0,
+        df['TotalCharges'] /df['MonthlyCharges'],
+        0,
+    )
+
+    return df
