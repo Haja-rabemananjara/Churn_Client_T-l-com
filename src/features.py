@@ -87,3 +87,28 @@ def add_is_new_customer(df: pd.DataFrame, thereshold: int=6) -> pd.DataFrame:
     df['is_new_customer'] = (df['tenure'] <= thereshold).astype(int)
 
     return df
+
+"""
+Compte le nombre de services additionnels souscrits par le client.
+
+Services comptés: OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies
+
+Hypothèse: un client multi-services est plus engagé et moins susceptible de churner (à confimer avec l'EDA)
+
+Args: df: DataFrame après encode_bin_columns (colonnes en 0/1)
+
+Returns:
+    DataFrame avec colonne 'nb_services' (entier 0-6)
+"""
+
+def add_nb_services(df: pd.DataFrame) -> pd.DataFrame:
+    service_cols = [
+        "OnlineSecurity", "OnlineBackup", "DeviceProtection",
+        "TechSupport", "StreamingTV", "StreamingMovies",
+    ]
+
+    existing = [column for column in service_cols if column in df.columns]
+    df = df.copy()
+    df['nb_services'] = df[existing].sum(axis=1)
+
+    return df
