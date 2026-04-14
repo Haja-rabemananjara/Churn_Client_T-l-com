@@ -65,5 +65,25 @@ def add_charge_ratio(df: pd.DataFrame) -> pd.DataFrame:
         df['TotalCharges'] /df['MonthlyCharges'],
         0,
     )
+    return df
+
+"""
+Flag binaire: client récent (tenure <= threshold mois)
+
+Justification EDA : les 6 premiers mois sont la période la plus à risque.
+Cette variable booléenne est plus directement interprétable pour un modèleL.
+
+Args:
+    df          : DataFrame contenant 'tenure'
+    threshold   : seuil en mois (défaut: 6)
+
+Returns:
+    DataFrame avec colonne 'is_new_customer' (1 si nouveau, 0 sinon)
+"""
+
+def add_is_new_customer(df: pd.DataFrame, thereshold: int=6) -> pd.DataFrame:
+
+    df = df.copy()
+    df['is_new_customer'] = (df['tenure'] <= thereshold).astype(int)
 
     return df
