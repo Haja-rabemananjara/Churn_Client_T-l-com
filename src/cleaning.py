@@ -28,26 +28,26 @@ def loadData(path = DATA_PATH):
     return df_raw
 
 # 1. Correction de TotalCharges
-"""
-On va corriger la colonne TotalCharges stockée en string dans le dataset brut.
 
-Problème : les clients avec tenure=0 ont un espace ' ' au lieu d'une valeur
-numérique → pandas charge la colonne entière comme object.
-
-Correction:
-    1. Remplace les espaces par NaN
-    2. Convertir en float
-    3. Impute les NaN avec la médiane
-
-Args:
-    df : DataFrame contenant la colonne 'TotalCharges'
-
-Returns:
-    DataFrame avec TotalCharges en float64, sans valeur manquante
-
-"""
 
 def fix_TotalCharges(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    On va corriger la colonne TotalCharges stockée en string dans le dataset brut.
+
+    Problème : les clients avec tenure=0 ont un espace ' ' au lieu d'une valeur
+    numérique → pandas charge la colonne entière comme object.
+
+    Correction:
+        1. Remplace les espaces par NaN
+        2. Convertir en float
+        3. Impute les NaN avec la médiane
+
+    Args:
+        df : DataFrame contenant la colonne 'TotalCharges'
+
+    Returns:
+        DataFrame avec TotalCharges en float64, sans valeur manquante
+    """
 
     df = df.copy()
 
@@ -65,17 +65,19 @@ def fix_TotalCharges(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # 2. Encodage de la variable cible
-"""
-Encoder la variable cible binaire Yes/No en 1/0
 
-Args:
-    df: DataFrame source
-    col: nom de la colonne cible (défaut : 'Churn')
-
-Returns:
-    DataFrame avec la colonne cible en int (1 churner, 0 = fidèle)
-"""
 def encode_target(df: pd.DataFrame, col: str = "Churn") -> pd.DataFrame:
+    """
+    Encoder la variable cible binaire Yes/No en 1/0
+
+    Args:
+        df: DataFrame source
+        col: nom de la colonne cible (défaut : 'Churn')
+
+    Returns:
+        DataFrame avec la colonne cible en int (1 churner, 0 = fidèle)
+    """
+    
     df = df.copy()
     df[col] = (df[col] == 'Yes').astype(int)
 
@@ -101,21 +103,21 @@ BINARY_MAP = {
     'No phone service':0,
 }
 
-"""
-Encode toutes les colonnes binaires Yes/No en 0/1.
-
-- BINARY_YES_NO : colonnes à 2 modalités strictes
-- BINARY_SERVICE : colonnes pouvant contenir 'No phone/internet service'
-- gender : Male→1, Female→0
-
-Args:
-    df : DataFrame après fix_TotalCharges et encode_target
-
-Returns:
-    DataFrame avec colonnes binaires en int
-"""
-
 def encode_bin_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Encode toutes les colonnes binaires Yes/No en 0/1.
+
+    - BINARY_YES_NO : colonnes à 2 modalités strictes
+    - BINARY_SERVICE : colonnes pouvant contenir 'No phone/internet service'
+    - gender : Male→1, Female→0
+
+    Args:
+        df : DataFrame après fix_TotalCharges et encode_target
+
+    Returns:
+        DataFrame avec colonnes binaires en int
+    """
+    
     df = df.copy()
     
     for col in BINARY_YES_NO:
@@ -129,23 +131,6 @@ def encode_bin_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # 4. One-Hot Encoding des colonnes nominales
-"""
-Applique le One-Hot Encoding aux colonnes nominales (plusieurs modalités).
-
-drop_first = False par défaut :
-    - Meilleure interprétabilité (on voit toutes les modalités)
-    - Nécessaire pour Random Forest (les arbres gèrent la muticolinéarité)
-    - A passer à True si on utilise uniquement la Régression Logistique
-
-Args:
-    df          : DataFrame après encode_binary_cols
-    cols        : liste des colonnes à encoder (défaut: NOMINAL_COLS)
-    drop_first  : si True, supprime la première modalité (évite multicolinéarité)
-
-Returns:
-    DataFrame avec colonnes dummies en int
-"""
-
 NOMINAL_COLS = ["InternetService", "Contract", "PaymentMethod"]
 
 def encode_nominal_cols(
@@ -153,6 +138,22 @@ def encode_nominal_cols(
         cols: list = None,
         drop_first: bool = False,
     ) -> pd.DataFrame:
+    """
+    Applique le One-Hot Encoding aux colonnes nominales (plusieurs modalités).
+
+    drop_first = False par défaut :
+        - Meilleure interprétabilité (on voit toutes les modalités)
+        - Nécessaire pour Random Forest (les arbres gèrent la muticolinéarité)
+        - A passer à True si on utilise uniquement la Régression Logistique
+
+    Args:
+        df          : DataFrame après encode_binary_cols
+        cols        : liste des colonnes à encoder (défaut: NOMINAL_COLS)
+        drop_first  : si True, supprime la première modalité (évite multicolinéarité)
+
+    Returns:
+        DataFrame avec colonnes dummies en int
+    """
 
     if cols is None:
         cols = NOMINAL_COLS
@@ -162,28 +163,27 @@ def encode_nominal_cols(
     return df
 
 # 5. Pipeline complet
-"""
-Exécute le pipeline de nettoyage complet dans le bon ordre.
-
-Ordre des étapes:
-    1. fix_totalCharge          -> correction type + imputation
-    2. encode_target            -> Churn Yes/No en 1/0
-    3. encode_bin_columns       -> conversion de toutes les colonnes binaires
-    4. encode_nominal_cols      -> OHE sur les colonnes nominales
-    5. drop customerID          -> identifiant non informatif pour le ML
-
-Args:
-    df_raw  : DataFrame brut chargé depuis data/raw/
-    drop_id : si True (défaut), supprime la colonne customerID
-
-Returns:
-    DataFrame nettoyé, prêt pour EDA et ML
-"""
-
 def run_cleaning_pipeline(
         df_raw: pd.DataFrame,
         drop_id: bool = True,
 ) -> pd.DataFrame:
+    """
+    Exécute le pipeline de nettoyage complet dans le bon ordre.
+
+    Ordre des étapes:
+        1. fix_totalCharge          -> correction type + imputation
+        2. encode_target            -> Churn Yes/No en 1/0
+        3. encode_bin_columns       -> conversion de toutes les colonnes binaires
+        4. encode_nominal_cols      -> OHE sur les colonnes nominales
+        5. drop customerID          -> identifiant non informatif pour le ML
+
+    Args:
+        df_raw  : DataFrame brut chargé depuis data/raw/
+        drop_id : si True (défaut), supprime la colonne customerID
+
+    Returns:
+        DataFrame nettoyé, prêt pour EDA et ML
+    """
     
     df = fix_TotalCharges(df_raw)
     df = encode_target(df)
@@ -196,22 +196,21 @@ def run_cleaning_pipeline(
     return df
 
 # 6. Validation post-cleaning
-"""
-Vérifier que le DataFrame nettoyé soit prêt pour le ML.
-
-Contrôles effectués:
-    - Aucune valeur manquante
-    - Aucune colonne de type object restante
-    - Colonne 'Churn' présente avec uniquement 0 et 1
-
-Args:
-    df: DataFrame après run_cleaning_pipeline
-
-Returns:
-    True si toutes les vérifications passent, lève une AssertionError sinon
-"""
-
 def validate_clean_df(df:pd.DataFrame) -> bool:
+    """
+    Vérifier que le DataFrame nettoyé soit prêt pour le ML.
+
+    Contrôles effectués:
+        - Aucune valeur manquante
+        - Aucune colonne de type object restante
+        - Colonne 'Churn' présente avec uniquement 0 et 1
+
+    Args:
+        df: DataFrame après run_cleaning_pipeline
+
+    Returns:
+        True si toutes les vérifications passent, lève une AssertionError sinon
+    """
 
     nan_count = df.isnull().sum().sum()
     assert nan_count == 0, f"{nan_count} valeurs manquantes détectées."

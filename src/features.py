@@ -15,24 +15,24 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # 1. Variables dérivées métier
-"""
-Créer une variable catégorielle groupant l'ancienneté en 4 tranches métier.
-
-Tranches choisies selon l'analyse EDA:
-    - 0-1 an    : période critique (taux de churn)
-    - 1-2 ans   : période de transition
-    - 2-4 ans   : clients stabilisés
-    - 4-6 ans   : clients très fidèles
-
-Args:
-    df: DataFrame (brut ou nettoyé)
-    col: colonne d'ancienneté (défaut: 'tenure')
-
-Returns:
-    DataFrame avec une colonne 'tenure_group' ajoutée
-"""
 
 def add_tenure_group(df: pd.DataFrame, col: str='tenure') -> pd.DataFrame:
+    """
+    Créer une variable catégorielle groupant l'ancienneté en 4 tranches métier.
+
+    Tranches choisies selon l'analyse EDA:
+        - 0-1 an    : période critique (taux de churn)
+        - 1-2 ans   : période de transition
+        - 2-4 ans   : clients stabilisés
+        - 4-6 ans   : clients très fidèles
+
+    Args:
+        df: DataFrame (brut ou nettoyé)
+        col: colonne d'ancienneté (défaut: 'tenure')
+
+    Returns:
+        DataFrame avec une colonne 'tenure_group' ajoutée
+    """
 
     df = df.copy()
     df['tenure_group'] = pd.cut(
@@ -43,22 +43,23 @@ def add_tenure_group(df: pd.DataFrame, col: str='tenure') -> pd.DataFrame:
     )
     return df
 
-"""
-Créer le ratio charges totales / charges mensuelles.
 
-Interpréation métier:
-    - Valeur attendue = tenure (nombre de mois)
-    - Un ratio anormalement bas peut indiquer des remises ou erreurs de facturation
-    - Utile pour détercter des patterns de départ prématuré
-
-Args:
-    df: DataFrame contenant 'TotalCharges' et 'MonthlyCharges' en float
-
-Returns:
-    DataFrame avec une colonne 'charge_ratio' ajoutée
-"""
 
 def add_charge_ratio(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Créer le ratio charges totales / charges mensuelles.
+
+    Interpréation métier:
+        - Valeur attendue = tenure (nombre de mois)
+        - Un ratio anormalement bas peut indiquer des remises ou erreurs de facturation
+        - Utile pour détercter des patterns de départ prématuré
+
+    Args:
+        df: DataFrame contenant 'TotalCharges' et 'MonthlyCharges' en float
+
+    Returns:
+        DataFrame avec une colonne 'charge_ratio' ajoutée
+    """
 
     df = df.copy()
 
@@ -70,41 +71,44 @@ def add_charge_ratio(df: pd.DataFrame) -> pd.DataFrame:
     df["charge_ratio"] = np.where(monthly > 0, total / monthly, 0)
     return df
 
-"""
-Flag binaire: client récent (tenure <= threshold mois)
 
-Justification EDA : les 6 premiers mois sont la période la plus à risque.
-Cette variable booléenne est plus directement interprétable pour un modèleL.
-
-Args:
-    df          : DataFrame contenant 'tenure'
-    threshold   : seuil en mois (défaut: 6)
-
-Returns:
-    DataFrame avec colonne 'is_new_customer' (1 si nouveau, 0 sinon)
-"""
 
 def add_is_new_customer(df: pd.DataFrame, thereshold: int=6) -> pd.DataFrame:
+    """
+    Flag binaire: client récent (tenure <= threshold mois)
+
+    Justification EDA : les 6 premiers mois sont la période la plus à risque.
+    Cette variable booléenne est plus directement interprétable pour un modèleL.
+
+    Args:
+        df          : DataFrame contenant 'tenure'
+        threshold   : seuil en mois (défaut: 6)
+
+    Returns:
+        DataFrame avec colonne 'is_new_customer' (1 si nouveau, 0 sinon)
+    """
 
     df = df.copy()
     df['is_new_customer'] = (df['tenure'] <= thereshold).astype(int)
 
     return df
 
-"""
-Compte le nombre de services additionnels souscrits par le client.
 
-Services comptés: OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies
-
-Hypothèse: un client multi-services est plus engagé et moins susceptible de churner (à confimer avec l'EDA)
-
-Args: df: DataFrame après encode_bin_columns (colonnes en 0/1)
-
-Returns:
-    DataFrame avec colonne 'nb_services' (entier 0-6)
-"""
 
 def add_nb_services(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compte le nombre de services additionnels souscrits par le client.
+
+    Services comptés: OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies
+
+    Hypothèse: un client multi-services est plus engagé et moins susceptible de churner (à confimer avec l'EDA)
+
+    Args: df: DataFrame après encode_bin_columns (colonnes en 0/1)
+
+    Returns:
+        DataFrame avec colonne 'nb_services' (entier 0-6)
+    """
+
     service_cols = [
         "OnlineSecurity", "OnlineBackup", "DeviceProtection",
         "TechSupport", "StreamingTV", "StreamingMovies",
