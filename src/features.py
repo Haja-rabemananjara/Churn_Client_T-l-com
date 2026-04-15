@@ -60,11 +60,13 @@ Returns:
 def add_charge_ratio(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df.copy()
-    df['charge_ratio'] = np.where(
-        df['MonthlyCharges'] > 0,
-        df['TotalCharges'] /df['MonthlyCharges'],
-        0,
-    )
+
+    # Conversion défensive: TotalCharges peut être string dans df_eda (données brutes)
+    # Les espaces ' ' (clients tenure=0) deviennent NaN puis 0
+    total = pd.to_numeric(df["TotalCharges"].replace(" ", np.nan), errors="coerce").fillna(0)
+    monthly = pd.to_numeric(df["MonthlyCharges"], errors="coerce").fillna(0)
+    
+    df["charge_ratio"] = np.where(monthly > 0, total / monthly, 0)
     return df
 
 """
