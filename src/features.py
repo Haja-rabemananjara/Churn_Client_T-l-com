@@ -11,7 +11,8 @@ Usage dans les notebooks:
 
 import pandas as pd
 import numpy as np
-
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 # 1. Variables dérivées métier
 """
@@ -114,3 +115,29 @@ def add_nb_services(df: pd.DataFrame) -> pd.DataFrame:
     df['nb_services'] = df[existing].sum(axis=1)
 
     return df
+
+## 2. Préparation pour le Machine Learning
+
+# Colonnes numériques à normaliser
+NUMERICAL_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
+
+"""
+Préparation des données pour l'entraînement ML.
+
+Etapes :
+    1. Séparation features (X) / cible (y)
+    2. Train/test split stratifié (préserve le ratio churners/non-churners)
+    3. Normalisation StandardScaler sur les features numériques
+        IMPORTANT : fit sur train uniquement -> évite le data leakage
+
+Args:
+    df          : DataFrame nettoyé (sorti de run_cleaning_pipeline)
+    target      : nom de la colonne cible (défaut : 'Churn')
+    test_size   : proportion du jeu de test (défaut : 0.2 = 20%)
+    random_state: graine aléatoire pour la reproductibilité
+    scale       : si True, applique StandardScaler sur les colonnes numériques
+
+Returns:
+    dict avec clés: X_train, X_test, y_train, y_test, scaler, feature_names
+    Le scaler est None si scale=False
+"""
