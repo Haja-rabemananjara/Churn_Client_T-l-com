@@ -114,3 +114,76 @@ def plot_churn_distribution(
     plt.tight_layout()
     _save(fig, save_as)
     return fig
+
+# 2. Churn par variable catégorielle
+def plot_churn_by_category(
+    df: pd.DataFrame,
+    category_col: str,
+    churn_col: str = "Churn_num",
+    order: list= None,
+    bar_colors: list = None,
+    avg_line: bool= True,
+    save_as: str= None,
+) -> plt.Figure:
+    """
+    Taux de churn par modalité d'une variable catégorielle.
+
+    Exemple: plot_churn_by_category(df_eda, 'Contract', order=['Month-to-month, 'One year', 'Two year'])
+
+    Args:
+        df          : DataFrame avec la variable catégorielle et Churn_num
+        category_col: colonne de regroupement
+        churn_col   : colonne numérique 0/1 du churn
+        order       : ordre des barres (None = tri décroissant)
+        bar_colors  : liste de couleurs (None = dégradé rouge->vert)
+        avg_line    : si Truen trace la ligne de la moyenne globale
+        save_as     : nom du fichier de sortie
+
+    Returns:
+        Figure matplotlib
+    """
+
+    set_project_style()
+    rate = df.groupby(category_col)[churn_col].mean() * 100
+
+    if order:
+        rate = rate.reindex(order)
+    else:
+        rate = rate.sort_values(ascending=False)
+    
+    nb_cat = len(rate)
+    if bar_colors is None:
+        bar_colors = [RED_CHURN, AMBER, GREEN_OK, BLUE_MAIN][:nb_cat]
+        if len(bar_colors) < nb_cat:
+            bar_colors = [RED_CHURN] * nb_cat
+
+    fig, ax = plt.subplot(figsize=(max(8, nb_cat * 2), 5))
+    bars = ax.bar(
+        rate.index.astype(str), rate.values,
+        color = bar_colors, edgecolor="white", linewidth=2, width=0.5,
+    )
+
+    for bar, val in zip(bars, rate.values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() +0.8,
+            f"{val:.1f}%",
+            ha="center", fontsize=12, fontweight="bold",
+        )
+
+    if avg_line:
+        avg = df[churn_col].mean()*100
+        ax.axhline(avg, color="grey", linestyle="--", linewidth =1.5, alpha=0.7)
+        ax.text(
+            len(rate) - 0.5, avg + 0.5,
+            f"Moyenne globale: {avg:.1f}%",
+            color="grey", fontsize=9,
+        )
+
+    ax.set_title(f"Taux de Churn par {category_col}", pad=15)
+    ax.set_xlabel(category_col)
+    ax.set_ylabel("Taux de churn (%)")
+    ax.set_ylim(0, rate.max() * 1.3)
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
