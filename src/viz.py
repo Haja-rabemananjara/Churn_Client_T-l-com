@@ -187,3 +187,78 @@ def plot_churn_by_category(
     plt.tight_layout()
     _save(fig, save_as)
     return fig
+
+
+# 3. Churn vs Ancienneté
+
+def plot_churn_vs_tenure(
+        df: pd.DataFrame,
+        tenure_col: str= 'tenure',
+        churn_col: str='Churn',
+        tenure_group_col: str= 'tenure_group',
+        save_as: str='03_churn_tenure.png',
+    ) -> plt.Figure:
+    """
+    Double graphique: histogramme empilé + taux de churn par tranche.
+
+    Args:
+        df              : DataFrame brut (avec Churn en Yes/No et tenure_group)
+        tenure_col      : colonne d'ancienneté brute
+        churn_col       : colonne Churn (Yes/No ou 0/1)
+        tenure_group_col: Colonne de tranches d'ancienneté (créée par add_tenure_group)
+        save_as         : nom du fichier de sortie
+
+    Returns:
+        Figure matplotlib
+    """
+
+    set_project_style()
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Histogrammes empilé
+    sns.histplot(
+        data=df,
+        x=tenure_col,
+        hue=churn_col,
+        multiple="stack",
+        bins=30,
+        palette=PALETTE_CHURN,
+        ax=axes[0],
+    )
+    axes[0].set_title("Distribution de l'Ancienneté selon le Churn")
+    axes[0].set_xlabel("Ancienneté (mois)")
+    axes[0].set_ylabel("Nombre de clients")
+    axes[0].annotate(
+        "Pic de churn\n(mois 1-6)",
+        xy=(3, 200), xytext=(15, 320),
+        arrowprops=dict(arrowstyle="->", color=RED_CHURN),
+        color=RED_CHURN, fontsize=9, fontweight="bold",
+    )
+
+    # Taux par tranche
+    if tenure_group_col in df.columns:
+        churn_num = df[churn_col].map({
+            "Yes":1, "No":0
+        }) if df[churn_col].dtype == object else df[churn_col]
+        rate = df.groupby(tenure_group_col, observed=True)[churn_col].apply(
+            lambda x: (x=="Yes").mean() * 100 if x.dtype == object else x.mean() * 100
+        )
+        t_colors = [RED_CHURN, AMBER, GREEN_OK, GREEN_OK]
+        bars = axes[1].bar(
+            rate.index.astype(str), rate.values,
+            color=t_colors[:len(rate)], edgecolor="white", linewidth=2, width=0.5,
+        )
+        for bar, val in zip(bars, rate.values):
+            axes[1].text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.5,
+                f"{val:.0f}%", ha="center", fontsize=12, fontweight="bold",
+            )
+        axes[1].set_title("Taux de Churn par Tranche d'Ancienneté")
+        axes[1].set_xlabel("Ancienneté")
+        axes[1].set_ylabel("Taux de churn (%)")
+        axes[1].set_ylim(0, rate.max() * 1.3)
+
+        plt.tight_layout()
+        _save(fig, save_as)
+        return fig
