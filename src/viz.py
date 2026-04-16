@@ -73,7 +73,7 @@ def plot_churn_distribution(
         Figure matplolib
     """
     set_project_style()
-    fig, axes = plt.subplots(1, 2, figsize={12, 5})
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
     counts = df[col].value_counts()
     total = counts.sum()
@@ -81,12 +81,12 @@ def plot_churn_distribution(
     # Camembert
     axes[0].pie(
         counts.values,
-        labels=[f"{idx}\n({value/total*100:.1f}%)" for idx, value in counts.items()]
-        color =[BLUE_MAIN, RED_CHURN],
+        labels=[f"{idx}\n({value/total*100:.1f}%)" for idx, value in counts.items()],
+        colors=[BLUE_MAIN, RED_CHURN],
         autopct="%1.1f%%",
         startangle=90,
-        wedgeprops={"edgecolor": "white", "linewidth":3},
-        textprops={"fontsize":11}
+        wedgeprops={"edgecolor": "white", "linewidth": 3},
+        textprops={"fontsize": 11},
     )
     axes[0].set_title("Distribution du Churn", pad=15)
 
@@ -96,9 +96,9 @@ def plot_churn_distribution(
         counts.index.astype(str), counts.values,
         color=bar_colors, edgecolor="white", linewidth=2, width=0.5,
     )
-    for bar, count in zip(bar, counts.values):
+    for bar, count in zip(bars, counts.values):
         axes[1].text(
-            bar.get_x() + bar.get_width / 2,
+            bar.get_x() + bar.get_width() / 2,
             bar.get_height() + 30,
             f"{count:,}\nClients",
             ha="center", fontsize=10, fontweight="bold",
