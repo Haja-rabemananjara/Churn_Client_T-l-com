@@ -157,7 +157,7 @@ def plot_churn_by_category(
         if len(bar_colors) < nb_cat:
             bar_colors = [RED_CHURN] * nb_cat
 
-    fig, ax = plt.subplot(figsize=(max(8, nb_cat * 2), 5))
+    fig, ax = plt.subplots(figsize=(max(8, nb_cat * 2), 5))
     bars = ax.bar(
         rate.index.astype(str), rate.values,
         color = bar_colors, edgecolor="white", linewidth=2, width=0.5,
