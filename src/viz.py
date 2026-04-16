@@ -237,11 +237,13 @@ def plot_churn_vs_tenure(
 
     # Taux par tranche
     if tenure_group_col in df.columns:
-        churn_num = df[churn_col].map({
-            "Yes":1, "No":0
-        }) if df[churn_col].dtype == object else df[churn_col]
+        churn_num = (
+            df[churn_col].map({"Yes": 1, "No": 0})
+            if df[churn_col].dtype == object
+            else df[churn_col]
+        )
         rate = df.groupby(tenure_group_col, observed=True)[churn_col].apply(
-            lambda x: (x=="Yes").mean() * 100 if x.dtype == object else x.mean() * 100
+            lambda x: (x == "Yes").mean() * 100 if x.dtype == object else x.mean() * 100
         )
         t_colors = [RED_CHURN, AMBER, GREEN_OK, GREEN_OK]
         bars = axes[1].bar(
