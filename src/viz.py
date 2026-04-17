@@ -237,14 +237,18 @@ def plot_churn_vs_tenure(
 
     # Taux par tranche
     if tenure_group_col in df.columns:
-        churn_num = (
-            df[churn_col].map({"Yes": 1, "No": 0})
-            if df[churn_col].dtype == object
-            else df[churn_col]
-        )
-        rate = df.groupby(tenure_group_col, observed=True)[churn_col].apply(
-            lambda x: (x == "Yes").mean() * 100 if x.dtype == object else x.mean() * 100
-        )
+        _order      = ["0-1 an", "1-2 ans", "2-4 ans", "4-6 ans"]
+        _raw        =   np.asarray(df[churn_col])
+        _churn_arr  = (_raw == "Yes").astype(np.int8) \
+                     if _raw.dtype.kind in ("U", "O", "S") \
+                     else (_raw != 0).astype(np.int8)
+        _tag_arr    = df[tenure_group_col].astype(str).to_numpy()
+        _rate_dict  = {
+            lbl: _churn_arr[_tag_arr == lbl].mean() * 100
+            for lbl in _order
+            if (_tag_arr == lbl).sum() > 0
+        }
+        rate = pd.Series(_rate_dict)
         t_colors = [RED_CHURN, AMBER, GREEN_OK, GREEN_OK]
         bars = axes[1].bar(
             rate.index.astype(str), rate.values,
@@ -256,11 +260,11 @@ def plot_churn_vs_tenure(
                 bar.get_height() + 0.5,
                 f"{val:.0f}%", ha="center", fontsize=12, fontweight="bold",
             )
-        axes[1].set_title("Taux de Churn par Tranche d'Ancienneté")
+        axes[1].set_title("Taux de Churn par tranche d'Ancienneté")
         axes[1].set_xlabel("Ancienneté")
         axes[1].set_ylabel("Taux de churn (%)")
         axes[1].set_ylim(0, rate.max() * 1.3)
 
-        plt.tight_layout()
-        _save(fig, save_as)
-        return fig
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
