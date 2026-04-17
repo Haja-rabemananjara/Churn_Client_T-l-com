@@ -268,3 +268,50 @@ def plot_churn_vs_tenure(
     plt.tight_layout()
     _save(fig, save_as)
     return fig
+
+# 4. Heatmap de corrélation
+
+def plot_correlation_heatmp(
+        df: pd.DataFrame,
+        cols: list = None,
+        rename_map: dict = None,
+        save_as: str='04_Corrélation_heatmap.png',
+) -> plt.Figure:
+    """
+    Heatmap de corrélation (triangle inférieur uniquement)
+
+    df doit contenur uniquement des colonnes numériques.
+
+    Args:
+        df          : DataFrame avce colonnes numériques uniquement
+        cols        : sous-ensemble de colonnes (None = toutes)
+        rename_map  : dict pour renommer les colonnes sur le graphique
+        save_as     : nom du fichier de sortie
+
+    Returns:
+        Figure matplotlib
+    """
+
+    set_project_style()
+    if cols:
+        data = df[cols].copy()
+    else:
+        df.copy()
+
+    if rename_map:
+        data = data.rename(columns=rename_map)
+
+    corr = data.corr().round(2)
+    mask = np.triu(np.ones_like(corr, dtype=bool))
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(
+        corr, mask=mask, annot=True, fmt=".2f",
+        cmap="RdBu_r", center=0, vmin=-1, vmax=2,
+        square=True, linewidths=0.5, ax=ax,
+        cbar_kws={"shrink":0.8}
+    )
+    ax.set_title("Matrice de Corrélation - Variables clés", pad=15)
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
