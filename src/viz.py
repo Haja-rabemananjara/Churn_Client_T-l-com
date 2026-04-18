@@ -293,10 +293,7 @@ def plot_correlation_heatmp(
     """
 
     set_project_style()
-    if cols:
-        data = df[cols].copy()
-    else:
-        df.copy()
+    data = df[cols].copy() if cols else df.copy()
 
     if rename_map:
         data = data.rename(columns=rename_map)
