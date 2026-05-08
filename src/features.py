@@ -186,3 +186,47 @@ def prepare_ml_data(
         "scaler": scaler,
         "feature_names": list(X_train.columns),
     }
+
+# 3. Prédiction sur un nouveau client
+
+def predict_new_cient(
+    client_dict: dict,
+    model,
+    scaler,
+    feature_names: list,
+    numerical_cols: list,
+    threshold: float = 0.5,
+) -> dict:
+    """
+    Prédit le risque de churn pour un nouveau client non vu.
+
+    Args:
+        client_dict     : dict des caractéristiques du client (valeurs brut)
+        model           : modèle sklearn entraîné (avec .predict_proba)
+        scaler          : StandardScaler ajusté sur le train
+        feature_names   : liste des features dans l'ordre du modèle
+        numerical_cols  : colonnes à normaliser (défaut : NUMERICAL_COLS)
+        threshold       : seuil de décision (défaut : 0.5)
+
+    Returns:
+        dict avec 'proba', 'prediction', 'risk_label'
+    """
+    if numerical_cols is None:
+        numerical_cols = NUMERICAL_COLS
+    
+    # Construire le DataFrame dans le bon ordre de colonnes
+    client_df = pd.DataFrame([client_dict])
+    client_df = client_df.reindex(columns=feature_names, fill_value=0)
+
+    # Normaliser les colonnes numériques présentes
+    num_present = [col for col in numerical_cols if col in client_df.columns]
+    if scaler is not None and num_present:
+        client_df[num_present] = scaler.transform(client_df[num_present])
+
+    proba = model.predict_proba(client_df)[0][1]
+
+    return {
+        "proba": round(float(proba), 4),
+        "prediction": int(proba >= threshold),
+        "risk_label": "RISQUE DE CHURN" if proba >= threshold else "Client STABLE",
+    }
