@@ -21,6 +21,7 @@ import matplotlib.ticker as mtick
 import seaborn as sns
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
 
 # Palette & style
 BLUE_MAIN = "#1A56DB"
@@ -309,6 +310,45 @@ def plot_correlation_heatmp(
         cbar_kws={"shrink":0.8}
     )
     ax.set_title("Matrice de Corrélation - Variables clés", pad=15)
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
+
+# 5. Comparaison des modèles ML
+
+def plot_roc_curves(
+    y_test,
+    models_probs: dict,
+    save_as: str = "05_roc_curves.png"
+) -> plt.Figure:
+    """
+    Courbes ROC pour comparer plusieurs modèles.
+
+    Args:
+        y_test      : labels réels (0/1)
+        models_probs: dict {nom_modèle: probabilité_prédites}
+                        ex: {'Logistic Regression': y_prob_lr, 'Random Forest': y_prob_rf}
+        save_as     : nom du fichier de sortie
+
+    Returns:
+        Figure matplotlib
+    """
+    set_project_style()
+    colors = [AMBER, BLUE_MAIN, GREEN_OK, RED_CHURN]
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    for (name, y_prob), color in zip(models_probs.items(), colors):
+        fpr, tpr, _ = roc_curve(y_test, y_prob)
+        auc = roc_auc_score(y_test, y_prob)
+        ax.plot(fpr, tpr, label=f"{name} (AUC = {auc:.3f})", color=color, lw=2)
+
+    ax.plot([0, 1], [0, 1], "k--", lw=1, label="Aléatoire (AUC=0.5)")
+    ax.set_title("Courbes ROC — Comparaison des modèles", pad=15)
+    ax.set_xlabel("Taux de Faux Positifs (1 - Spécificité)")
+    ax.set_ylabel("Taux de Vrais Positifs (Sensibilité)")
+    ax.legend(fontsize=10)
+    ax.set_xlim([0, 1])
+    ax.set_ylim([0, 1.05])
     plt.tight_layout()
     _save(fig, save_as)
     return fig
