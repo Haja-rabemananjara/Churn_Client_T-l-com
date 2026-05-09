@@ -189,12 +189,12 @@ def prepare_ml_data(
 
 # 3. Prédiction sur un nouveau client
 
-def predict_new_cient(
+def predict_new_client(
     client_dict: dict,
     model,
     scaler,
     feature_names: list,
-    numerical_cols: list,
+    numerical_cols: list = None,
     threshold: float = 0.5,
 ) -> dict:
     """
