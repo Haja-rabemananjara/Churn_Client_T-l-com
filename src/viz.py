@@ -352,3 +352,39 @@ def plot_roc_curves(
     plt.tight_layout()
     _save(fig, save_as)
     return fig
+
+def plot_confusion_matrices(
+    y_test,
+    models_preds: dict,
+    save_as: str="06_confusion_matrices.png"
+) -> plt.Figure:
+    """
+    Matrices de confusion pour plusieurs modèles, côte à côte.
+
+    Args:
+        y_test      : labels réels
+        models_preds: dict {nom_modèle: prédictions}
+        save_as     : nom du fichier
+
+    Returns:
+        Figure matplotlib
+    """
+    set_project_style()
+    n = len(models_preds)
+    cmaps = ["Blues", "Reds", "Greens"]
+    fig, axes = plt.subplots(1, n, figsize=(6 *n, 5))
+    if n == 1:
+        axes = [axes]
+    
+    for ax, (name, y_pred), cmap in zip(axes, models_preds.items(), cmaps):
+        cm  = confusion_matrix(y_test, y_pred)
+        sns.heatmap(
+            cm, annot=True, fmt="d", cmap=cmap, ax=ax,
+            xticklabels=["Prédit Non-Churn", "Prédit Churn"],
+            yticklabels=["Réel Non-Churn", "Réel Churn"],
+        )
+        ax.set_title(f"Confusion Matrix\n{name}")
+    
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
