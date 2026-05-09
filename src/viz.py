@@ -388,3 +388,58 @@ def plot_confusion_matrices(
     plt.tight_layout()
     _save(fig, save_as)
     return fig
+
+def plot_feature_importance(
+    model,
+    feature_names: list,
+    top_n: int = 10,
+    save_as : str="07_feature_importance.png"
+) -> plt.Figure:
+    """
+    Graphique horizontal des top N variables les plus importantes.
+
+    Compatible avec tout modèle sklearn ayant l'attribut feature_importances_
+    (Random Forest, Gradient Boosting, XGboost, etc.)
+
+    Args:
+        model           : modèle entraîné avecc feature_importances_
+        feature_names   : liste des noms de features (dans l'ordre du modèle)
+        top_n           : nombre de features à afficher
+        save_as         : nom du fichier
+
+    Returns:
+        Figure matplotlib
+    """
+    set_project_style()
+    importances = pd.Series(model.feature_importances_, index=feature_names)
+    top = importances.nlargest(top_n).sort_values()
+
+    # Couleur : rouge pour les 3 premières (les plus importantes), bleu pour les autres
+    n = len(top)
+    colors = [RED_CHURN if i >= n - 3 else BLUE_MAIN for i in range(n)]
+
+    fig, ax = plt.subplots(figsize=(10, max(5, top_n * 0.6)))
+    top.plot.barh(ax=ax, color=colors, edgecolor="white", linewidth=1.5)
+
+    # Valeurs annotées
+    for i, (val, name) in enumerate(zip(top.values, top.index)):
+        ax.text(val + 0.001, i, f"{val:.3f}", va="center", fontsize=9)
+
+    # Nettoyage des noms de features pour l'affichage
+    clean = {
+        idx: idx.replace("_"," ")
+                .replace("Contract ", "Contrat ")
+                .replace("PaymentMethod ", "Paiement")
+                .replace("InternetService ", "Internet ")
+        for idx in top.index
+    }
+    ax.set_yticklabels([clean.get(label.get_text(), label.get_text()) for label in ax.get_yticklabels()])
+    
+    ax.set_title(
+        f"Top {top_n} Variables Explicatives du Churn\n(Feature Importance — {type(model).__name__})",
+        pad=15,
+    )
+    ax.set_xlabel("Importance relative")
+    plt.tight_layout()
+    _save(fig, save_as)
+    return fig
