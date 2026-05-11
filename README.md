@@ -3,6 +3,8 @@
 Projet Data Analyst complet : nettoyage, analyse exploratoire, visualisation et Machine Learning  
 sur le dataset IBM Telco Customer Churn (7 043 clients).
 
+Lien Visualisation: https://public.tableau.com/app/profile/hajatiana.rabemananjara/viz/ChurnclientTlcom/Tableaudebord1?publish=yes
+
 ---
 
 ## 🎯 Résultats clés
